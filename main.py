@@ -57,7 +57,7 @@ class PasswordGenerator:
 
     def add_entry(self):
         field_validation = False
-        confirmation = False
+        user_confirmation = False
         # Create a dict using input data
         form_data = {
             "website": self.website_entry.get(),
@@ -74,14 +74,22 @@ class PasswordGenerator:
 
         if field_validation:
             # Confirm data with user before writing
-            confirmation = messagebox.askyesno(
+            user_confirmation = messagebox.askyesno(
                 title="Confirm",
                 message=f"Website: {form_data['website']}\nUsername: {form_data['username']}\n"
                         f"Password: {form_data['password']}\n\nDo you want to save this entry?\n"
             )
 
-        if field_validation and confirmation:
-            with open(file="./data.json", mode="r+") as data_file:
+        if field_validation and user_confirmation:
+            try:
+                data_file = open("./data.json", "r+")
+                data_file.close()
+            except FileNotFoundError:
+                data_file = open("./data.json", "w")
+                data_file.write("{}")
+                data_file.close()
+            finally:
+                data_file = open("./data.json", "r+")
                 # Read the current file contents
                 file_data = json.load(data_file)
                 # Add new data with an index at the end of the json
@@ -90,6 +98,7 @@ class PasswordGenerator:
                 # Move file pointer back to beginning and write json data
                 data_file.seek(0)
                 json.dump(file_data, data_file, indent=4)
+                data_file.close()
 
             # Clear form
             self.website_entry.delete(0, tkinter.END)
