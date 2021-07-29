@@ -6,6 +6,8 @@ tk-password-generator
 import tkinter
 import json
 from tkinter import messagebox
+import random
+import pyperclip
 
 
 class PasswordGenerator:
@@ -34,14 +36,28 @@ class PasswordGenerator:
         self.password_entry = tkinter.Entry(width=32)
         self.password_entry.grid(column=1, row=3, sticky=tkinter.W)
 
-        self.generate_button = tkinter.Button(text="Generate Password")
+        self.generate_button = tkinter.Button(text="Generate Password", command=self.generate_password)
         self.generate_button.grid(column=2, row=3, sticky=tkinter.W)
 
         self.add_button = tkinter.Button(text="Add", width=43, command=self.add_entry)
         self.add_button.grid(column=1, row=4, columnspan=2, sticky=tkinter.W)
 
+        self.available_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+                                    "0123456789!@#$%^&*()-_=+[]{};:,./?"
+        # Populate password field on creation.
+        self.generate_password()
+
+    def generate_password(self):
+        password = ""
+        for character in range(32):
+            password += random.choice(self.available_characters)
+        self.password_entry.delete(0, tkinter.END)
+        self.password_entry.insert(0, password)
+        pyperclip.copy(password)
+
     def add_entry(self):
-        confirmation = True
+        field_validation = False
+        confirmation = False
         # Create a dict using input data
         form_data = {
             "website": self.website_entry.get(),
@@ -52,9 +68,11 @@ class PasswordGenerator:
         # Ensure all fields are filled out
         if len(form_data['website']) == 0 or len(form_data['username']) == 0 or len(form_data['password']) == 0:
             messagebox.showerror("Empty Fields", "You must enter data in each field.")
-            confirmation = False
+            field_validation = False
+        else:
+            field_validation = True
 
-        if confirmation:
+        if field_validation:
             # Confirm data with user before writing
             confirmation = messagebox.askyesno(
                 title="Confirm",
@@ -62,7 +80,7 @@ class PasswordGenerator:
                         f"Password: {form_data['password']}\n\nDo you want to save this entry?\n"
             )
 
-        if confirmation:
+        if field_validation and confirmation:
             with open(file="./data.json", mode="r+") as data_file:
                 # Read the current file contents
                 file_data = json.load(data_file)
