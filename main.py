@@ -5,6 +5,7 @@ tk-password-generator
 """
 import tkinter
 import json
+from tkinter import messagebox
 
 
 class PasswordGenerator:
@@ -40,6 +41,7 @@ class PasswordGenerator:
         self.add_button.grid(column=1, row=4, columnspan=2, sticky=tkinter.W)
 
     def add_entry(self):
+        confirmation = True
         # Create a dict using input data
         form_data = {
             "website": self.website_entry.get(),
@@ -47,29 +49,39 @@ class PasswordGenerator:
             "password": self.password_entry.get()
         }
 
-        with open(file="./data.json", mode="r+") as data_file:
-            # Read the current file contents
-            file_data = json.load(data_file)
-            # Add new data with an index at the end of the json
-            entry_count = len(file_data)
-            file_data[f"{entry_count}"] = form_data
-            # Move file pointer back to beginning and write json data
-            data_file.seek(0)
-            json.dump(file_data, data_file, indent=4)
+        # Ensure all fields are filled out
+        if len(form_data['website']) == 0 or len(form_data['username']) == 0 or len(form_data['password']) == 0:
+            messagebox.showerror("Empty Fields", "You must enter data in each field.")
+            confirmation = False
 
-        # Clear form
-        self.website_entry.delete(0, tkinter.END)
-        self.username_entry.delete(0, tkinter.END)
-        self.password_entry.delete(0, tkinter.END)
+        if confirmation:
+            # Confirm data with user before writing
+            confirmation = messagebox.askyesno(
+                title="Confirm",
+                message=f"Website: {form_data['website']}\nUsername: {form_data['username']}\n"
+                        f"Password: {form_data['password']}\n\nDo you want to save this entry?\n"
+            )
+
+        if confirmation:
+            with open(file="./data.json", mode="r+") as data_file:
+                # Read the current file contents
+                file_data = json.load(data_file)
+                # Add new data with an index at the end of the json
+                entry_count = len(file_data)
+                file_data[f"{entry_count}"] = form_data
+                # Move file pointer back to beginning and write json data
+                data_file.seek(0)
+                json.dump(file_data, data_file, indent=4)
+
+            # Clear form
+            self.website_entry.delete(0, tkinter.END)
+            self.username_entry.delete(0, tkinter.END)
+            self.password_entry.delete(0, tkinter.END)
 
 
-def main():
+if __name__ == "__main__":
     # Create app
     app = PasswordGenerator()
 
     # Run app
     app.window.mainloop()
-
-
-if __name__ == "__main__":
-    main()
