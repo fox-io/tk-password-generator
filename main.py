@@ -62,8 +62,8 @@ class PasswordGenerator:
         pyperclip.copy(password)
 
     def add_entry(self):
-        field_validation = False
         user_confirmation = False
+        data_file = False
         # Create a dict using input data
         form_data = {
             "website": self.website_entry.get(),
